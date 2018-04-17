@@ -13,6 +13,7 @@ set(HS
   ../sub/ed25519/src/ed25519.h
 
   # main
+  ../src/network.hpp
 )
 
 set(SS
