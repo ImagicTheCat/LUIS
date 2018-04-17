@@ -42,3 +42,9 @@ Useful for user registration or direct "anonymous" login.
 * the service receives the double signed message, checks the user signature, checks its own signature and checks if the content is valid for this connection
 
 An identification is valid in a specific context, so it's up to the service to provide the minimum amount of contextual data in the original message to prevent stealing/reuse of the connection "ticket".
+
+## Notes
+
+* use Ed25519 for signatures
+* use OpenSSL for more general tasks
+* no interface dependency, the server will call external programs to prompt things
