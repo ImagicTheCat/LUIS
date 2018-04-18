@@ -13,7 +13,10 @@ set(HS
   ../sub/ed25519/src/ed25519.h
 
   # main
+  ../src/submains.hpp
   ../src/network.hpp
+  ../src/MainArgs.hpp
+  ../src/MapData.hpp
 )
 
 set(SS
@@ -30,6 +33,10 @@ set(SS
   ../sub/ed25519/src/sha512.c
 
   # main
+  ../src/MainArgs.cpp
+  ../src/MapData.cpp
+  ../src/submain_server.cpp
+  ../src/submain_list.cpp
   ../src/main.cpp
 )
 

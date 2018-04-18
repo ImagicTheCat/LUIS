@@ -48,3 +48,7 @@ An identification is valid in a specific context, so it's up to the service to p
 * use Ed25519 for signatures
 * use OpenSSL for more general tasks
 * no interface dependency, the server will call external programs to prompt things
+
+## Config options
+
+* `data-dir`: data directory (ex: `/var/lib/luis`)
