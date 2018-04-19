@@ -17,6 +17,8 @@ set(HS
   ../src/network.hpp
   ../src/MainArgs.hpp
   ../src/MapData.hpp
+  ../src/Dir.hpp
+  ../src/tools.hpp
 )
 
 set(SS
@@ -35,15 +37,18 @@ set(SS
   # main
   ../src/MainArgs.cpp
   ../src/MapData.cpp
+  ../src/Dir.cpp
+  ../src/tools.cpp
   ../src/submain_server.cpp
-  ../src/submain_list.cpp
+  ../src/submain_identity.cpp
+  ../src/submain_service.cpp
   ../src/main.cpp
 )
 
 if(WIN32)
   add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
   set(LIBS
-    ws2_32 Shlwapi)
+    ws2_32 Shlwapi crypto)
 
   # no Release/Debug dirs on windows
   SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${OUTPUT_DIRECTORY}")
@@ -54,6 +59,7 @@ if(WIN32)
   SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
 elseif(UNIX)
   set(LIBS
+    crypto
     )
 endif()
 

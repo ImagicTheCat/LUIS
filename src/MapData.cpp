@@ -1,5 +1,6 @@
 
 #include "MapData.hpp"
+#include "tools.hpp"
 
 bool MapData::has(const std::string &key) const
 {
@@ -17,7 +18,19 @@ const std::string& MapData::get(const std::string &key) const
 
 void MapData::set(const std::string &key, const std::string &value)
 {
-  map.insert(std::pair<std::string, std::string>(key, value));
+  std::map<std::string, std::string>::iterator it = map.find(key);
+  if(it != map.end())
+    it->second = value;
+  else
+    map.insert(std::pair<std::string, std::string>(key, value));
+}
+
+
+void MapData::unset(const std::string &key)
+{
+  std::map<std::string, std::string>::iterator it = map.find(key);
+  if(it != map.end())
+    map.erase(it);
 }
 
 void MapData::load(const std::string &data)
@@ -26,9 +39,10 @@ void MapData::load(const std::string &data)
   std::string line;
 
   while(std::getline(in, line)){
+    line = replace(line, "\r", "");
     size_t spos = line.find(" ");
     if(spos != std::string::npos) // set key/value
-      set(line.substr(0, spos), line.substr(spos));
+      set(line.substr(0, spos), line.substr(spos+1));
   }
 }
 

@@ -2,6 +2,7 @@
 #include <iostream>
 #include "MainArgs.hpp"
 #include "MapData.hpp"
+#include "tools.hpp"
 
 #include "submains.hpp"
 
@@ -12,13 +13,7 @@ int main(int argc, char **argv)
   // cfg path
   if(!args.has("cfg")){
 #ifdef _WIN32
-    // path relative to executable
-    char path[4096];
-    std::string fpath(path, GetModuleFileName(NULL, path, 4096));
-    std::string epath = fpath.substr(0,fpath.find_last_of("/\\"));
-
-    args.set("cfg", epath+"/luis.conf"); 
-    args.set("cfg-data-dir", epath+"/data"); 
+    args.set("cfg", ced()+"/luis.conf"); 
 #else
     args.set("cfg", "/etc/luis/luis.conf"); // GNU/Linux path
 #endif
@@ -38,13 +33,48 @@ int main(int argc, char **argv)
     return 1;
   }
 
+#ifdef _WIN32
+  if(!args.has("cfg-data-dir")) // use data/ near executable under Windows if not defined
+    args.set("cfg-data-dir", ced()+"/data"); 
+#endif
+
+  if(!args.has("cfg-data-dir")){
+    std::cerr << "data-dir not set" << std::endl;
+    return 1;
+  }
+
   // exec
   if(args.has("1")){ // command
     const std::string &cmd = args.get("1");
-    if(cmd == "list")
-      return submain_list(args);
+    if(cmd == "identity")
+      return submain_identity(args);
+    else if(cmd == "service")
+      return submain_service(args);
+    else if(cmd == "help"){
+      std::cout << "LUIS commands:" << std::endl;
+
+      std::cout << "IDENTITY" << std::endl;
+      std::cout << "  identity list" << std::endl;
+      std::cout << "    list identities" << std::endl;
+      std::cout << "  identity create [--name <name>]" << std::endl;
+      std::cout << "    create identity, display public key" << std::endl;
+      std::cout << "  identity check <public_key>" << std::endl;
+      std::cout << "    check if the identity keys are valid" << std::endl;
+      std::cout << "  identity chname <public_key> <name>" << std::endl;
+      std::cout << "    change identity name" << std::endl;
+      std::cout << "  identity chpass <public_key>" << std::endl;
+      std::cout << "    change identity password" << std::endl;
+      std::cout << "  identity delete <public_key>" << std::endl;
+      std::cout << "    delete identity" << std::endl;
+      
+      std::cout << "SERVICE" << std::endl;
+      std::cout << "  service set <public_key> [--deny] [--name <name>]" << std::endl;
+      std::cout << "    register/deny/update service" << std::endl;
+      std::cout << "  service unset <public_key>" << std::endl;
+      std::cout << "    delete service entry" << std::endl;
+    }
     else{
-      std::cerr << "LUIS command \"" << cmd << "\" not found" << std::endl;
+      std::cerr << "LUIS command \"" << cmd << "\" not found (try \"luis help\")" << std::endl;
       return 1;
     }
   }

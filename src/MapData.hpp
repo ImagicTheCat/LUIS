@@ -27,6 +27,8 @@ class MapData{
     // value: should not contain CRLF
     void set(const std::string &key, const std::string &value);
 
+    void unset(const std::string &key);
+
     void clear(){ map.clear(); }
 
     // load map data from passed string (don't clear before)
