@@ -99,7 +99,16 @@ int submain_identity(MainArgs &args)
 
       MapData mdata;
       if(mdata.loadFile(path)){
-        // ...
+        std::cout << "Password: " << std::flush;
+        std::string cmd(args.get("cfg-cmd-password-term"));
+        Command command(cmd, "r");
+
+        if(command){
+          std::string output;
+          command.wait(output);
+        }
+        else
+          std::cerr << "fail to call command \"" << cmd << "\"" << std::endl;
       }
       else{
         std::cerr << "couldn't read " << path << std::endl;

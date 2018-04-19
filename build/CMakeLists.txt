@@ -15,6 +15,7 @@ set(HS
   # main
   ../src/submains.hpp
   ../src/network.hpp
+  ../src/Command.hpp
   ../src/MainArgs.hpp
   ../src/MapData.hpp
   ../src/Dir.hpp
