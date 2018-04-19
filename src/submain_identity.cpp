@@ -92,6 +92,36 @@ int submain_identity(MainArgs &args)
       return 1;
     }
   }
+  else if(cmd == "chpass"){
+    if(args.has("3")){
+      const std::string &hpublic_key = args.get("3");
+      std::string path(args.get("cfg-data-dir")+"/identities/"+hpublic_key);
+
+      MapData mdata;
+      if(mdata.loadFile(path)){
+        // ...
+      }
+      else{
+        std::cerr << "couldn't read " << path << std::endl;
+        return 1;
+      }
+    }
+    else{
+      std::cerr << "missing public_key parameter" << std::endl;
+      return 1;
+    }
+  }
+  else if(cmd == "delete"){
+    if(args.has("3")){
+      std::string path(args.get("cfg-data-dir")+"/identities/"+args.get("3"));
+      if(!Dir::rmfile(path))
+        std::cerr << "couldn't delete " << path << std::endl;
+    }
+    else{
+      std::cerr << "missing public_key parameter" << std::endl;
+      return 1;
+    }
+  }
   else if(cmd == "list"){
     std::string dir(args.get("cfg-data-dir")+"/identities/");
     std::vector<std::string> pfiles;
