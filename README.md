@@ -91,7 +91,7 @@ If a man in the middle use the contract, since he doesn't have the client privat
 
 Same as the website login without https, we would register a local client by generating a private_key (ex: installation) and use it to create the contract with the server/client/identity (adding the temporary public_key for encryption).
 
-#### Local application to encrypt a file
+#### Local application
 
 Even in local, making the contract unique (timestamp, id...) is relevant: another user looking at TCP packets could save the contract for later use.
 
@@ -100,13 +100,10 @@ version 1
 public_key <local_app_public_key>
 identity <identity_public_key>
 timestamp <timestamp>
-file_key <file_public_key>
 =<app_signature>
 timestamp <luis_timestamp>
 =<identity_signature>
 ```
-
-To encrypt the file, a private_key is generated and used to obtain the shared secret with the user identity, then the shared secret would be used for symmetric encryption. The encrypted file would have the file public_key and the identity used in a header to decrypt it.
 
 ## Notes
 
