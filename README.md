@@ -49,7 +49,8 @@ A contract is a message carried and signed by each node/step from the service to
 
 ### Examples of complete contracts
 
-#### Simple website login (with https)
+
+#### Simple website login (with https)
 
 Without https, stealing/using the contract (identity) would be possible (ex: man in the middle).
 Also, we can't really encrypt data using the identity and Ed25519 in a secure way in this case because we don't have any client to rely on to verify a temporary private_key (see example without https).
