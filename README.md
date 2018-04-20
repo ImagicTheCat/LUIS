@@ -52,6 +52,7 @@ Also, we can't really encrypt data using the identity and Ed25519 in a secure wa
 
 ```
 version 1
+title <contract_title>
 public_key <site_public_key>
 identity <identity_public_key>
 timestamp <timestamp>
@@ -67,6 +68,7 @@ Imagine that we want to create a secure webapp without https (not easy and proba
 
 ```
 version 1
+title <contract_title>
 public_key <site_public_key>
 identity <identity_public_key>
 timestamp <timestamp>
@@ -92,6 +94,7 @@ Even in local, making the contract unique (timestamp, id...) is relevant: anothe
 
 ```
 version 1
+title <contract_title>
 public_key <local_app_public_key>
 identity <identity_public_key>
 timestamp <timestamp>
