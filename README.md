@@ -43,6 +43,70 @@ Useful for user registration or direct "anonymous" login.
 
 An identification is valid in a specific context, so it's up to the service to provide the minimum amount of contextual data in the original message to prevent stealing/reuse of the connection "ticket".
 
+## Contract
+
+A contract is a message carried and signed by each node/step from the service to the identity. This allow to do an identification process with possible encryption at every step. The first node is the service/client initializing the contract, the before last node is the client and the last node is the identity.
+
+### Examples of complete contracts
+
+#### Simple website login (with https)
+
+Without https, stealing/using the contract (identity) would be possible (ex: man in the middle).
+Also, we can't really encrypt data using the identity and Ed25519 in a secure way in this case because we don't have any client to rely on to verify a temporary private_key (see example without https).
+
+```
+version 1
+public_key <site_public_key>
+identity <identity_public_key>
+timestamp <timestamp>
+id <random_id>
+=<site_signature>
+timestamp <luis_timestamp>
+=<identity_signature>
+```
+
+#### Website login (without https)
+
+Imagine that we want to create a secure webapp without https (not easy and probably not recommended, but why not), we could add a step (client node) to the contract.
+
+```
+version 1
+public_key <site_public_key>
+identity <identity_public_key>
+timestamp <timestamp>
+id <random_id>
+=<site_signature>
+public_key <client_public_key>
+encryption_key <tmp_public_encryption_key>
+=<client_signature>
+timestamp <luis_timestamp>
+=<identity_signature>
+```
+
+If we forget cookies and generate a localStorage private_key (that will be registered to LUIS) as the client and a temporary private_key for the encryption, we can now share a secret and use symmetric encryption between the client (the web page) and the service (the server).
+If a man in the middle use the contract, since he doesn't have the client private_key and the encryption private_key, he can't modify the contract and can't communicate properly with the server.
+
+#### Game/app login/encryption (without using https)
+
+Same as the website login without https, we would register a local client by generating a private_key (ex: installation) and use it to create the contract with the server/client/identity (adding the temporary public_key for encryption).
+
+#### Local application to encrypt a file
+
+Even in local, making the contract unique (timestamp, id...) is relevant: another user looking at TCP packets could save the contract for later use.
+
+```
+version 1
+public_key <local_app_public_key>
+identity <identity_public_key>
+timestamp <timestamp>
+file_key <file_public_key>
+=<app_signature>
+timestamp <luis_timestamp>
+=<identity_signature>
+```
+
+To encrypt the file, a private_key is generated and used to obtain the shared secret with the user identity, then the shared secret would be used for symmetric encryption. The encrypted file would have the file public_key and the identity used in a header to decrypt it.
+
 ## Notes
 
 * use Ed25519 for signatures
