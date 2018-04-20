@@ -42,7 +42,7 @@ set(SS
   ../src/tools.cpp
   ../src/submain_server.cpp
   ../src/submain_identity.cpp
-  ../src/submain_service.cpp
+  ../src/submain_key.cpp
   ../src/main.cpp
 )
 

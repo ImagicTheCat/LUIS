@@ -14,6 +14,6 @@
 
 int submain_server(MainArgs &args);
 int submain_identity(MainArgs &args);
-int submain_service(MainArgs &args);
+int submain_key(MainArgs &args);
 
 #endif

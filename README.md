@@ -16,30 +16,25 @@ LUIS must be simple as possible, as any security features to reduce the attack s
 
 ## Basic protocol 
 
-### Service registration
+### Client/service key registration
 
-* a service asks to register itself (associate a name to the public key), the message is signed
-* the user accept or deny (by comparing with the original service public key)
-  * accept: the service is now accepted for requests
-  * deny: the service is rejected for the next requests
+* a client/service asks to register itself (associate a name to the public key), the message is signed
+* the user accept or deny (by comparing with the original client/service public key and entering a code returned to the client)
+  * accept: the client/service is now accepted for requests
+  * deny: the client/service is rejected for the next requests
 
-If the service is already registered, will do nothing and answer without errors.
+If the client/service key is already registered, will do nothing and answer without errors.
 
-### Choose identity
+### Identification / contract
 
-* a service asks to let the user choose an identity (not signed, no checks)
-* user denies/choose an identity (returns the public key)
+example:
 
-Useful for user registration or direct "anonymous" login.
-
-### Identification
-
-* an user try to connect to a service with a specific identity (public key)
-* the service makes an HTTP POST request to LUIS, passing a body with the public key followed by custom data to identify this connection (timestamp, id, ...), then the body is signed with the service private key
-* LUIS receives the request, checks the signature and informs (show service public key) / asks the user (external prompt, ...) for a password to unlock the private key
+* an user try to connect to a service with a specific identity (public key) or let the choice of the identity (anonymous mode, identity will be added by LUIS)
+* the client makes an HTTP POST request to LUIS, creating a contract with custom data to identify this connection (timestamp, id, ...) and sign the contract
+* LUIS receives the contract, checks the signature and informs (show service and client public key) / asks the user (external prompt, ...) for a password to unlock the private key
 * user denies/accepts/enters password
-* LUIS adds a timestamp to the service signed message, signs it and returns it
-* the service receives the double signed message, checks the user signature, checks its own signature and checks if the content is valid for this connection
+* LUIS adds a timestamp to the contract, signs it and returns it
+* the client receives the signed contract, checks the user signature, checks its own signature and checks if the content is valid for this connection
 
 An identification is valid in a specific context, so it's up to the service to provide the minimum amount of contextual data in the original message to prevent stealing/reuse of the connection "ticket".
 

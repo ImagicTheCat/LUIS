@@ -48,8 +48,8 @@ int main(int argc, char **argv)
     const std::string &cmd = args.get("1");
     if(cmd == "identity")
       return submain_identity(args);
-    else if(cmd == "service")
-      return submain_service(args);
+    else if(cmd == "key")
+      return submain_key(args);
     else if(cmd == "help"){
       std::cout << "LUIS commands:" << std::endl;
 
@@ -67,11 +67,13 @@ int main(int argc, char **argv)
       std::cout << "  identity delete <public_key>" << std::endl;
       std::cout << "    delete identity" << std::endl;
       
-      std::cout << "SERVICE" << std::endl;
-      std::cout << "  service set <public_key> [--deny] [--name <name>]" << std::endl;
-      std::cout << "    register/deny/update service" << std::endl;
-      std::cout << "  service unset <public_key>" << std::endl;
-      std::cout << "    delete service entry" << std::endl;
+      std::cout << "KEY" << std::endl;
+      std::cout << "  key list" << std::endl;
+      std::cout << "    list client/service keys" << std::endl;
+      std::cout << "  key set <public_key> [--deny | --allow] [--name <name>]" << std::endl;
+      std::cout << "    register/deny/update client/service key" << std::endl;
+      std::cout << "  key unset <public_key>" << std::endl;
+      std::cout << "    delete client/service key" << std::endl;
     }
     else{
       std::cerr << "LUIS command \"" << cmd << "\" not found (try \"luis help\")" << std::endl;
