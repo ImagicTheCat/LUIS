@@ -1,6 +1,10 @@
 
 #include "submains.hpp"
 
+void request_contract(MainArgs &args, const std::string &body, std::string &response)
+{
+}
+
 int submain_server(MainArgs &args)
 {
   const unsigned int port = 25519;
@@ -44,17 +48,79 @@ int submain_server(MainArgs &args)
         std::cout << "server listening on port " << port << std::endl;
 
         while(cs = accept(s, (SOCKADDR*)&csin, &sin_size)){
-          std::cout << "accept..." << std::endl;
           if(cs != INVALID_SOCKET){
-            // receive request
+            // receive/parse request
             int size;
             bool done = false;
-            while((size = recv(cs, buffer, buffer_size, 0)) > 0 && !done){
-              // TODO read header+data, handle request
-              std::cout << std::string(buffer,size);
+            std::string req, header, body;
+            std::string method, path;
+            long int content_length = -1;
+            std::string response_body;
+ 
+            // read/parse from socket
+            while(body.size() != content_length && (size = recv(cs, buffer, buffer_size, 0)) > 0){
+              if(header.size() == 0){ // find header
+                req.append(buffer, size); // fill request
+
+                size_t hpos = req.find("\r\n\r\n");
+                if(hpos != std::string::npos){
+                  header = req.substr(0,hpos);
+                  body = req.substr(hpos+4);
+                  req.clear();
+
+                  // parse header
+                  std::vector<std::string> lines;
+                  split(header, "\r\n", lines);
+
+                  content_length = 0; // init content_length
+
+                  for(size_t i = 0; i < lines.size(); i++){
+                    if(i == 0){ // first line
+                      std::vector<std::string> args;
+                      split(lines[i], " ", args);
+
+                      if(args.size() >= 2){
+                        method = args[0];
+                        path = args[1];
+                      }
+                    }
+                    else{ // header key/value
+                      std::vector<std::string> args;
+                      split(lines[i], ": ", args);
+
+                      if(args.size() >= 2 && args[0] == "Content-Length"){
+                        std::stringstream ss(args[1]);
+                        ss >> content_length;
+                      }
+                    }
+                  }
+                }
+              }
+              else // fill body
+                body.append(buffer, size);
             }
 
-            std::cout << "end." << std::endl;
+            // execute correct path function (empty response body will return an HTTP error)
+            if(method == "POST" && body.size() == content_length){
+              if(path == "/contract")
+                request_contract(args, body, response_body);
+            }
+
+            // build response
+            std::string response;
+            if(response_body.size() > 0){
+              response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+              response += response_body;
+            }
+            else
+              response = "HTTP/1.1 403 Forbidden\r\n\r\n";
+
+            // send response
+            send(cs, response.c_str(), response.size(), 0);
+
+            // close socket
+            shutdown(cs, SD_BOTH); 
+            closesocket(cs);
           }
         }
       }
