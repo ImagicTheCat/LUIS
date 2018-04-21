@@ -19,6 +19,7 @@ set(HS
   ../src/MainArgs.hpp
   ../src/MapData.hpp
   ../src/Dir.hpp
+  ../src/Contract.hpp
   ../src/tools.hpp
 )
 
@@ -39,6 +40,7 @@ set(SS
   ../src/MainArgs.cpp
   ../src/MapData.cpp
   ../src/Dir.cpp
+  ../src/Contract.cpp
   ../src/tools.cpp
   ../src/submain_server.cpp
   ../src/submain_identity.cpp
