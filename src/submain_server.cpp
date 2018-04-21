@@ -3,6 +3,66 @@
 
 void request_contract(MainArgs &args, const std::string &body, std::string &response)
 {
+  static const std::string ahex = "0123456789abcdef";
+
+  Contract contract;
+  contract.load(body);
+
+  if(contract.verify(false)){
+    if(contract.getDataSteps().size() > 0){
+      // service data
+      const MapData &service_data = contract.getDataSteps()[0];
+      std::string service_key = sanitize(service_data.get("public_key"), ahex);
+      std::string service_path(args.get("cfg-data-dir")+"/keys/"+service_key);
+      MapData service_fdata;
+      if(service_fdata.loadFile(service_path)){
+        // client data
+        const MapData &client_data = contract.getDataSteps()[contract.getDataSteps().size()-1];
+        std::string client_key = sanitize(client_data.get("public_key"), ahex);
+        std::string client_path(args.get("cfg-data-dir")+"/keys/"+client_key);
+        MapData client_fdata;
+        if(client_fdata.loadFile(client_path)){
+          // check client/service
+          if(!service_fdata.has("deny") && !client_fdata.has("deny")){
+            // identity
+            std::string identity;
+            if(service_data.has("identity")) // pre-selected identity
+              identity = service_data.get("identity");
+            else{ // select identity
+            }
+
+            std::string identity_key = sanitize(identity, ahex);
+            std::string identity_path(args.get("cfg-data-dir")+"/identities/"+identity_key);
+            MapData identity_fdata;
+            if(identity_fdata.loadFile(identity_path)){
+              // load identity public_key/private_key
+              std::string private_key;
+              std::string public_key;
+
+              if(identity_fdata.has("passphrase")){
+              }
+              else{
+                std::string private_key = hex2buf(identity_fdata.get("private_key"));
+                std::string public_key = hex2buf(identity_key);
+              }
+
+              MapData &next_step = contract.next();
+              next_step.set("timestamp", "0");
+
+              // sign contract
+              if(contract.sign(public_key, private_key)){
+                // check contract
+                if(contract.verify(true)){
+                  // send back contract
+                  contract.write(response);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 int submain_server(MainArgs &args)

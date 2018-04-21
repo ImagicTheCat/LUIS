@@ -9,6 +9,7 @@
 #include "tools.hpp"
 #include "Dir.hpp"
 #include "Command.hpp"
+#include "Contract.hpp"
 #include "../sub/ed25519/src/ed25519.h"
 #include <openssl/crypto.h>
 

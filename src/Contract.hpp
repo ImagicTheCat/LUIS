@@ -13,7 +13,8 @@ class Contract{
     void write(std::string &data){ data = content; }
 
     // verify the entire contract
-    bool verify() const;
+    // closed: verify the contract as completed (signed by identity)
+    bool verify(bool complete) const;
 
     // add a step if the previous one is already signed (or return the last)
     MapData& next()

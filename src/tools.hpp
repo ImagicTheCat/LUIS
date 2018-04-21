@@ -98,4 +98,22 @@ inline unsigned int hex2byte(char hex)
 std::string hex2buf(const char* data, int size);
 std::string hex2buf(const std::string& data);
 
+/**
+ * \brief Sanitize string
+ * \param str string to sanitize
+ * \param allowed allowed characters
+ * \return string with only allowed characters
+ */
+std::string sanitize(const std::string& str, const std::string& allowed);
+
+/**
+ * \brief Sanitize check string
+ * \param str string to check
+ * \param allowed allowed characters
+ * \return true if containing only allowed characters
+ */
+bool sanitizeCheck(const std::string& str, const std::string& allowed);
+
+
+
 #endif

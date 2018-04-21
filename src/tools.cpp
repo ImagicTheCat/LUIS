@@ -126,3 +126,33 @@ std::string hex2buf(const char* data, int size)
 
   return ret;
 }
+
+std::string sanitize(const std::string& str, const std::string& allowed)
+{
+  std::set<char> charset;
+  for(size_t i = 0; i < allowed.size(); ++i)
+    charset.insert(allowed[i]);
+
+  std::string r;
+  for(size_t i = 0; i < str.size(); ++i){
+    const char &c = str[i];
+    if(charset.find(c) != charset.end())
+      r += c;
+  }
+
+  return r;
+}
+
+bool sanitizeCheck(const std::string& str, const std::string& allowed)
+{
+  std::set<char> charset;
+  for(size_t i = 0; i < allowed.size(); ++i)
+    charset.insert(allowed[i]);
+
+  for(size_t i = 0; i < str.size(); ++i){
+    if(charset.find(str[i]) == charset.end())
+      return false;
+  }
+
+  return true;
+}

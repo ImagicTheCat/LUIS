@@ -34,7 +34,7 @@ void Contract::load(const std::string &data)
   }
 }
 
-bool Contract::verify() const
+bool Contract::verify(bool complete) const
 {
   for(size_t i = 0; i < signatures.size(); i++){
     const size_t& end = signatures[i].first;
@@ -44,14 +44,15 @@ bool Contract::verify() const
 
       std::string public_key;
 
-      if(data_step.has("public_key"))
-        public_key = hex2buf(data_step.get("public_key"));
-      else if(i == signatures.size()-1){ // last step without public key, find identity
+      // last step and closed, find identity
+      if(complete && i == signatures.size()-1){ 
         if(data_steps[0].has("identity")) // identity in first contract step
           public_key = hex2buf(data_steps[0].get("identity"));
         else if(data_step.has("identity")) // identity last contract step
           public_key = hex2buf(data_step.get("identity"));
       }
+      else if(data_step.has("public_key"))
+        public_key = hex2buf(data_step.get("public_key"));
 
       if(sign.size() == 64 && public_key.size() == 32){
         if(ed25519_verify((const unsigned char*)sign.c_str(), (const unsigned char*)content.c_str(), end, (const unsigned char*)public_key.c_str()) != 1)
@@ -82,6 +83,7 @@ bool Contract::sign(const std::string& public_key, const std::string& private_ke
     ed25519_sign(signature, (const unsigned char*)content.c_str(), content.size(), (const unsigned char*)public_key.c_str(), (const unsigned char*)private_key.c_str());
 
     // add signature
+    signatures.push_back(std::pair<size_t, std::string>(content.size(), std::string((char*)signature, 64)));
     content += "="+buf2hex((const char*)signature, 64)+"\r\n";
     return true;
   }
