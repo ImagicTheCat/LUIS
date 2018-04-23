@@ -65,6 +65,65 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
   }
 }
 
+void request_register(MainArgs &args, const std::string &body, std::string &response)
+{
+  static const std::string ahex = "0123456789abcdef";
+
+  Contract contract;
+  contract.load(body);
+
+  if(contract.verify(false)){
+    if(contract.getDataSteps().size() > 0){
+      // service data
+      const MapData &data = contract.getDataSteps()[0];
+      std::string key = sanitize(data.get("public_key"), ahex);
+      std::string key_path(args.get("cfg-data-dir")+"/keys/"+key);
+
+      MapData key_fdata;
+      if(key_fdata.loadFile(key_path)){ // already known
+        if(key_fdata.has("deny"))
+          response = "denied";
+        else
+          response = "ok";
+      }
+      else{ // register
+        // compute key 4 digits code
+        std::string code;
+        for(int i = 0; i < 4; i++)
+          code += '0'+((unsigned int)key[i])%10;
+
+        // ask user for code
+        std::string cmd(args.get("cfg-cmd-register"));
+        Command command(cmd, "r");
+
+        std::string cmd_code;
+        command.wait(cmd_code);
+
+        if(code == cmd_code){ // same code
+        }
+      }
+    }
+  }
+}
+
+void request_regcode(MainArgs &args, const std::string &body, std::string &response)
+{
+  MapData mdata;
+  mdata.load(body);
+
+  // compute 4 digits code from key
+  if(mdata.has("public_key")){
+    std::string key(hex2buf(mdata.get("public_key")));
+    if(key.size() >= 4){
+      std::string code;
+      for(int i = 0; i < 4; i++)
+        code += '0'+((unsigned int)key[i])%10;
+
+      response = code;
+    }
+  }
+}
+
 int submain_server(MainArgs &args)
 {
   const unsigned int port = 25519;
@@ -164,6 +223,10 @@ int submain_server(MainArgs &args)
             if(method == "POST" && body.size() == content_length){
               if(path == "/contract")
                 request_contract(args, body, response_body);
+              else if(path == "/register")
+                request_register(args, body, response_body);
+              else if(path == "/regcode")
+                request_regcode(args, body, response_body);
             }
 
             // build response
