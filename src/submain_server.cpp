@@ -87,20 +87,36 @@ void request_register(MainArgs &args, const std::string &body, std::string &resp
           response = "ok";
       }
       else{ // register
+        std::string name = sanitize(data.get("name"), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ");
+
         // compute key 4 digits code
         std::string code;
         for(int i = 0; i < 4; i++)
           code += '0'+((unsigned int)key[i])%10;
 
-        // ask user for code
+        // ask user for code; pass "<key> (<name>)"
         std::string cmd(args.get("cfg-cmd-register"));
-        Command command(cmd, "r");
+        Command command(cmd+" "+buf2hex(key+" ("+name+")"), "r");
 
+        // get entered code (or "deny")
         std::string cmd_code;
         command.wait(cmd_code);
 
-        if(code == cmd_code){ // same code
+        if(cmd_code == "deny"){
+          key_fdata.set("name", name);
+          key_fdata.set("deny", "");
+          key_fdata.writeFile(key_path);
+
+          response = "denied";
         }
+        else if(cmd_code == code){ // same code
+          key_fdata.set("name", name);
+          key_fdata.writeFile(key_path);
+
+          response = "ok";
+        }
+        else
+          response = "denied";
       }
     }
   }
