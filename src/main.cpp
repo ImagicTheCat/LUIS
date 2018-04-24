@@ -70,7 +70,7 @@ int main(int argc, char **argv)
       std::cout << "KEY" << std::endl;
       std::cout << "  key list" << std::endl;
       std::cout << "    list client/service keys" << std::endl;
-      std::cout << "  key set <public_key> [--deny | --allow] [--name <name>]" << std::endl;
+      std::cout << "  key set <public_key> [--deny | --allow]" << std::endl;
       std::cout << "    register/deny/update client/service key" << std::endl;
       std::cout << "  key unset <public_key>" << std::endl;
       std::cout << "    delete client/service key" << std::endl;

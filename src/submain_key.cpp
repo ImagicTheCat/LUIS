@@ -13,9 +13,6 @@ int submain_key(MainArgs &args)
       MapData mdata;
       mdata.loadFile(path);
 
-      if(args.has("name"))
-        mdata.set("name", args.get("name"));
-
       if(args.has("deny"))
         mdata.set("deny", "");
       else if(args.has("allow"))
@@ -48,14 +45,14 @@ int submain_key(MainArgs &args)
     Dir::explode(dir, pfiles, Dir::SFILE);
 
     // header
-    std::cout << "public_key                                                       deny name" << std::endl;
+    std::cout << "public_key                                                       deny" << std::endl;
 
     for(int i = 0; i < pfiles.size(); i++){
       MapData mdata;
       if(mdata.loadFile(pfiles[i])){
         std::string public_key(pfiles[i].substr(dir.size()));
 
-        std::cout << public_key << " " << (mdata.has("deny") ? "yes" : "no ") << "  " << mdata.get("name") << std::endl;
+        std::cout << public_key << " " << (mdata.has("deny") ? "yes" : "no ") << std::endl;
       }
       else
         std::cerr << "couldn't read " << pfiles[i] << std::endl;

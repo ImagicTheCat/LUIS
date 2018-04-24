@@ -4,6 +4,7 @@
 void request_contract(MainArgs &args, const std::string &body, std::string &response)
 {
   static const std::string ahex = "0123456789abcdef";
+  static const std::string aname = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_ ";
 
   Contract contract;
   contract.load(body);
@@ -15,83 +16,108 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
       std::string service_key = sanitize(service_data.get("public_key"), ahex);
       std::string service_path(args.get("cfg-data-dir")+"/keys/"+service_key);
       MapData service_fdata;
-      if(service_fdata.loadFile(service_path)){
-        // client data
-        const MapData &client_data = contract.getDataSteps()[contract.getDataSteps().size()-1];
-        std::string client_key = sanitize(client_data.get("public_key"), ahex);
-        std::string client_path(args.get("cfg-data-dir")+"/keys/"+client_key);
-        MapData client_fdata;
-        if(client_fdata.loadFile(client_path)){
-          // check client/service
-          if(!service_fdata.has("deny") && !client_fdata.has("deny")){
-            // prepare command
+      bool service_registered = service_fdata.loadFile(service_path);
 
-            // create identity list
-            std::vector<std::pair<std::string, MapData> > identities; // key/name
+      // client data
+      const MapData &client_data = contract.getDataSteps()[contract.getDataSteps().size()-1];
+      std::string client_key = sanitize(client_data.get("public_key"), ahex);
+      std::string client_path(args.get("cfg-data-dir")+"/keys/"+client_key);
+      MapData client_fdata;
+      bool client_registered = client_fdata.loadFile(client_path);
 
-            if(service_data.has("identity")) // pre-selected identity
-              identities.push_back(std::pair<std::string, std::string>(service_data.get("identity"), MapData()));
-            else{ // append all identities
-              std::vector<std::string> idfiles;
-              std::string dir(args.get("cfg-data-dir")+"/identities/");
-              Dir::explode(dir, idfiles, Dir::SFILE);
-              for(size_t i = 0; i < idfiles.size(); i++){
-                std::string public_key(pfiles[i].substr(dir.size()));
-                identities.push_back(std::pair<std::string, tring>(public_key, MapData()));
+      // check client/service
+      if(!service_fdata.has("deny") && !client_fdata.has("deny")){
+        // prepare command
+
+        // create identity list
+        std::vector<std::pair<std::string, MapData> > identities; // key/name
+
+        if(service_data.has("identity")) // pre-selected identity
+          identities.push_back(std::pair<std::string, MapData>(service_data.get("identity"), MapData()));
+        else{ // append all identities
+          std::vector<std::string> idfiles;
+          std::string dir(args.get("cfg-data-dir")+"/identities/");
+          Dir::explode(dir, idfiles, Dir::SFILE);
+          for(size_t i = 0; i < idfiles.size(); i++){
+            std::string public_key(idfiles[i].substr(dir.size()));
+            identities.push_back(std::pair<std::string, MapData>(public_key, MapData()));
+          }
+        }
+
+        // check identities
+        for(size_t i = identities.size()-1; i >= 0; i--){
+          std::pair<std::string, MapData> &identity = identities[i];
+
+          identity.first = sanitize(identity.first, ahex);
+          std::string identity_path(args.get("cfg-data-dir")+"/identities/"+identity.first);
+
+          if(!identity.second.loadFile(identity_path)) // erase entry if not found
+            identities.erase(identities.begin()+i);
+        }
+
+        std::string command_data;
+
+        // write identities
+        std::stringstream ss;
+        ss << identities.size();
+        command_data += ss.str()+"\r\n";
+
+        for(size_t i = 0; i < identities.size(); i++){
+          std::pair<std::string, MapData> &identity = identities[i];
+          command_data += identity.first+" "+(identity.second.has("passphrase") ? "pass" : "nopass")+" "+identity.second.get("name")+"\r\n";
+        }
+
+        // write service and client
+        command_data += (!service_registered ? "/!\\ UNREGISTERED service " : "service ")+service_key+" ("+sanitize(service_data.get("name"), aname)+")\r\n";
+        command_data += (!client_registered ? "/!\\ UNREGISTERED client " : "client ")+client_key+" ("+sanitize(client_data.get("name"), aname)+")\r\n";
+
+        // write contract
+        std::string contract_str;
+        contract.write(contract_str);
+        command_data += contract_str;
+
+        // exec contract command
+        std::string cmd_out;
+        Command cmd(args.get("cfg-cmd-contract")+" "+buf2hex(command_data), "r");
+        cmd.wait(cmd_out); // should return "<id_identity> <pass>" or "blacklist service|client|both"
+
+        size_t sep = cmd_out.find(" ");
+        if(sep != std::string::npos){
+          std::string out1(cmd_out.substr(0, sep)), out2(cmd_out.substr(sep+1));
+          if(out1 == "blacklist"){ // blacklist
+          }
+          else{ // sign contract
+            std::stringstream ss;
+            ss.str(out1);
+            size_t id = 0;
+            ss >> id;
+
+            if(id < identities.size()){
+              std::pair<std::string, MapData> &identity = identities[id];
+
+              // load identity public_key/private_key
+              std::string private_key;
+              std::string public_key;
+
+              if(identity.second.has("passphrase")){
+                // TODO: unlock key with out2 pass
+              }
+              else{
+                std::string private_key = hex2buf(identity.second.get("private_key"));
+                std::string public_key = hex2buf(identity.first);
+              }
+
+              MapData &next_step = contract.next();
+
+              // sign contract
+              if(contract.sign(public_key, private_key)){
+                // verify contract
+                if(contract.verify(true)){
+                  // send back contract
+                  contract.write(response);
+                }
               }
             }
-
-            // check identities
-            for(size_t i = identities.size()-1; i >= 0; i--){
-              std::pair<std::string, std::string> &identity = identities[i];
-
-              identity.first = sanitize(identity.first, ahex);
-              std::string identity_path(args.get("cfg-data-dir")+"/identities/"+identity.first);
-
-              if(!identity.second.loadFile(identity_path)) // erase entry if not found
-                identities.erase(identities.begin()+i);
-            }
-
-            std::string command_data;
-
-            // write identities
-            std::stringstream ss;
-            ss << identities.size();
-            command_data += ss.str()+"\r\n";
-
-            for(size_t i = 0; i < identities.size(); i++){
-              std::pair<std::string, std::string> &identity = identities[i];
-              command_data += identity.first+" "+(identity.second.get("passphrase") ? "pass" : "nopass")+" "+identity.second.get("name")+"\r\n";
-            }
-
-            // write service and client
-
-            // TODO rework
-
-
-                // load identity public_key/private_key
-                std::string private_key;
-                std::string public_key;
-
-                if(identity_fdata.has("passphrase")){
-                }
-                else{
-                  std::string private_key = hex2buf(identity_fdata.get("private_key"));
-                  std::string public_key = hex2buf(identity_key);
-                }
-
-                MapData &next_step = contract.next();
-                next_step.set("timestamp", "0");
-
-                // sign contract
-                if(contract.sign(public_key, private_key)){
-                  // check contract
-                  if(contract.verify(true)){
-                    // send back contract
-                    contract.write(response);
-                  }
-                }
-
           }
         }
       }
