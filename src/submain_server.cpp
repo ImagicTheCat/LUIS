@@ -24,118 +24,77 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
         if(client_fdata.loadFile(client_path)){
           // check client/service
           if(!service_fdata.has("deny") && !client_fdata.has("deny")){
-            // identity
-            std::string identity;
+            // prepare command
+
+            // create identity list
+            std::vector<std::pair<std::string, MapData> > identities; // key/name
+
             if(service_data.has("identity")) // pre-selected identity
-              identity = service_data.get("identity");
-            else{ // select identity
+              identities.push_back(std::pair<std::string, std::string>(service_data.get("identity"), MapData()));
+            else{ // append all identities
+              std::vector<std::string> idfiles;
+              std::string dir(args.get("cfg-data-dir")+"/identities/");
+              Dir::explode(dir, idfiles, Dir::SFILE);
+              for(size_t i = 0; i < idfiles.size(); i++){
+                std::string public_key(pfiles[i].substr(dir.size()));
+                identities.push_back(std::pair<std::string, tring>(public_key, MapData()));
+              }
             }
 
-            std::string identity_key = sanitize(identity, ahex);
-            std::string identity_path(args.get("cfg-data-dir")+"/identities/"+identity_key);
-            MapData identity_fdata;
-            if(identity_fdata.loadFile(identity_path)){
-              // load identity public_key/private_key
-              std::string private_key;
-              std::string public_key;
+            // check identities
+            for(size_t i = identities.size()-1; i >= 0; i--){
+              std::pair<std::string, std::string> &identity = identities[i];
 
-              if(identity_fdata.has("passphrase")){
-              }
-              else{
-                std::string private_key = hex2buf(identity_fdata.get("private_key"));
-                std::string public_key = hex2buf(identity_key);
-              }
+              identity.first = sanitize(identity.first, ahex);
+              std::string identity_path(args.get("cfg-data-dir")+"/identities/"+identity.first);
 
-              MapData &next_step = contract.next();
-              next_step.set("timestamp", "0");
+              if(!identity.second.loadFile(identity_path)) // erase entry if not found
+                identities.erase(identities.begin()+i);
+            }
 
-              // sign contract
-              if(contract.sign(public_key, private_key)){
-                // check contract
-                if(contract.verify(true)){
-                  // send back contract
-                  contract.write(response);
+            std::string command_data;
+
+            // write identities
+            std::stringstream ss;
+            ss << identities.size();
+            command_data += ss.str()+"\r\n";
+
+            for(size_t i = 0; i < identities.size(); i++){
+              std::pair<std::string, std::string> &identity = identities[i];
+              command_data += identity.first+" "+(identity.second.get("passphrase") ? "pass" : "nopass")+" "+identity.second.get("name")+"\r\n";
+            }
+
+            // write service and client
+
+            // TODO rework
+
+
+                // load identity public_key/private_key
+                std::string private_key;
+                std::string public_key;
+
+                if(identity_fdata.has("passphrase")){
                 }
-              }
-            }
+                else{
+                  std::string private_key = hex2buf(identity_fdata.get("private_key"));
+                  std::string public_key = hex2buf(identity_key);
+                }
+
+                MapData &next_step = contract.next();
+                next_step.set("timestamp", "0");
+
+                // sign contract
+                if(contract.sign(public_key, private_key)){
+                  // check contract
+                  if(contract.verify(true)){
+                    // send back contract
+                    contract.write(response);
+                  }
+                }
+
           }
         }
       }
-    }
-  }
-}
-
-void request_register(MainArgs &args, const std::string &body, std::string &response)
-{
-  static const std::string ahex = "0123456789abcdef";
-
-  Contract contract;
-  contract.load(body);
-
-  if(contract.verify(false)){
-    if(contract.getDataSteps().size() > 0){
-      // service data
-      const MapData &data = contract.getDataSteps()[0];
-      std::string key = sanitize(data.get("public_key"), ahex);
-      std::string key_path(args.get("cfg-data-dir")+"/keys/"+key);
-
-      MapData key_fdata;
-      if(key_fdata.loadFile(key_path)){ // already known
-        if(key_fdata.has("deny"))
-          response = "denied";
-        else
-          response = "ok";
-      }
-      else{ // register
-        std::string name = sanitize(data.get("name"), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ");
-
-        // compute key 4 digits code
-        std::string code;
-        for(int i = 0; i < 4; i++)
-          code += '0'+((unsigned int)key[i])%10;
-
-        // ask user for code; pass "<key> (<name>)"
-        std::string cmd(args.get("cfg-cmd-register"));
-        Command command(cmd+" "+buf2hex(key+" ("+name+")"), "r");
-
-        // get entered code (or "deny")
-        std::string cmd_code;
-        command.wait(cmd_code);
-
-        if(cmd_code == "deny"){
-          key_fdata.set("name", name);
-          key_fdata.set("deny", "");
-          key_fdata.writeFile(key_path);
-
-          response = "denied";
-        }
-        else if(cmd_code == code){ // same code
-          key_fdata.set("name", name);
-          key_fdata.writeFile(key_path);
-
-          response = "ok";
-        }
-        else
-          response = "denied";
-      }
-    }
-  }
-}
-
-void request_regcode(MainArgs &args, const std::string &body, std::string &response)
-{
-  MapData mdata;
-  mdata.load(body);
-
-  // compute 4 digits code from key
-  if(mdata.has("public_key")){
-    std::string key(hex2buf(mdata.get("public_key")));
-    if(key.size() >= 4){
-      std::string code;
-      for(int i = 0; i < 4; i++)
-        code += '0'+((unsigned int)key[i])%10;
-
-      response = code;
     }
   }
 }
@@ -239,10 +198,6 @@ int submain_server(MainArgs &args)
             if(method == "POST" && body.size() == content_length){
               if(path == "/contract")
                 request_contract(args, body, response_body);
-              else if(path == "/register")
-                request_register(args, body, response_body);
-              else if(path == "/regcode")
-                request_regcode(args, body, response_body);
             }
 
             // build response
