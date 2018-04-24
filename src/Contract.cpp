@@ -36,6 +36,15 @@ void Contract::load(const std::string &data)
 
 bool Contract::verify(bool complete) const
 {
+  if(signatures.size() == 0) // invalid without signatures
+    return false;
+  
+  // invalid if there are data after the last signatures
+  const std::pair<size_t,std::string> &endsign = signatures[signatures.size()-1];
+  if(endsign.first+endsign.second.size()*2+3 != content.size())
+    return false;
+
+  // check each signatures
   for(size_t i = 0; i < signatures.size(); i++){
     const size_t& end = signatures[i].first;
     const std::string& sign = signatures[i].second;
