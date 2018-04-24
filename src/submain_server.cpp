@@ -68,8 +68,8 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
         }
 
         // write service and client
-        command_data += (!service_registered ? "/!\\ UNREGISTERED service " : "service ")+service_key+" ("+sanitize(service_data.get("name"), aname)+")\r\n";
-        command_data += (!client_registered ? "/!\\ UNREGISTERED client " : "client ")+client_key+" ("+sanitize(client_data.get("name"), aname)+")\r\n";
+        command_data += (!service_registered ? "/!\\ UNREGISTERED /!\\ service " : "service ")+service_key+" ("+sanitize(service_data.get("name"), aname)+")\r\n";
+        command_data += (!client_registered ? "/!\\ UNREGISTERED /!\\ client " : "client ")+client_key+" ("+sanitize(client_data.get("name"), aname)+")\r\n";
 
         // write contract
         std::string contract_str;
