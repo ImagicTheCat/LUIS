@@ -11,14 +11,14 @@ void Contract::load(const std::string &data)
   size_t lpos = 0; // begin cursor
   size_t spos; // end cursor
   while((spos = content.find("\r\n=", lpos)) != std::string::npos){
-    std::string data_step(content.substr(lpos, spos+2));
+    std::string data_step(content.substr(lpos, spos+2-lpos));
 
     lpos = spos+3;
 
     // find signature
     size_t end_sign = content.find("\r\n", lpos);
     if(end_sign != std::string::npos){
-      std::string data_sign(hex2buf(content.substr(lpos, end_sign)));
+      std::string data_sign(hex2buf(content.substr(lpos, end_sign-lpos)));
 
       // add data
       data_steps.push_back(MapData());

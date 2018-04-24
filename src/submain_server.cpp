@@ -45,7 +45,7 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
         }
 
         // check identities
-        for(size_t i = identities.size()-1; i >= 0; i--){
+        for(int i = identities.size()-1; i >= 0; i--){
           std::pair<std::string, MapData> &identity = identities[i];
 
           identity.first = sanitize(identity.first, ahex);
@@ -229,11 +229,11 @@ int submain_server(MainArgs &args)
             // build response
             std::string response;
             if(response_body.size() > 0){
-              response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+              response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-cache\r\n\r\n";
               response += response_body;
             }
             else
-              response = "HTTP/1.1 403 Forbidden\r\n\r\n";
+              response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-cache\r\n\r\n";
 
             // send response
             send(cs, response.c_str(), response.size(), 0);
