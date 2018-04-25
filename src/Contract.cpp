@@ -38,7 +38,7 @@ bool Contract::verify(bool complete) const
 {
   if(signatures.size() == 0) // invalid without signatures
     return false;
-  
+
   // invalid if there are data after the last signatures
   const std::pair<size_t,std::string> &endsign = signatures[signatures.size()-1];
   if(endsign.first+endsign.second.size()*2+3 != content.size())
@@ -63,6 +63,7 @@ bool Contract::verify(bool complete) const
       else if(data_step.has("public_key"))
         public_key = hex2buf(data_step.get("public_key"));
 
+      // check
       if(sign.size() == 64 && public_key.size() == 32){
         if(ed25519_verify((const unsigned char*)sign.c_str(), (const unsigned char*)content.c_str(), end, (const unsigned char*)public_key.c_str()) != 1)
           return false;
