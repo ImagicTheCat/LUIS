@@ -2,7 +2,7 @@
 
 A contract is a message carried and signed by each step from the service to the identity. This allow for example to do an identification process. The first step is the service/client creating the contract, the before last step is the client (if one exists) and the last step is the identity.
 
-A contract is generic and not specifically designed for identification. For example, changing some critical account informations on a web site could require to sign a higher level contract.
+A contract is generic and not specifically designed for identification. For example, changing some critical account informations on a web site could require to sign a higher level contract. We could also generate a persistent contract to verify a public information (uploaded content, signature...), bound to a specific service.
 
 ## Format
 
