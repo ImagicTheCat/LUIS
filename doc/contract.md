@@ -25,9 +25,9 @@ Signatures and public keys are stored in plain hexadecimal (without uppercase).
 
 ```
 ...step1
-=<signature>
+=<signature>CRLF
 ...step2
-=<signature>
+=<signature>CRLF
 ...
 ```
 
