@@ -35,9 +35,18 @@ onload: function()
     method: "POST",
     body: contract
   }).then(function(r){
-    var pre = document.createElement("pre");
-    pre.innerText = (r.ok ? r.body : "error, status: "+r.status);
-    document.body.appendChild(pre);
+    if(r.ok){
+      r.text().then(function(body){
+        var pre = document.createElement("pre");
+        pre.innerText = body;
+        document.body.appendChild(pre);
+      });
+    }
+    else{
+      var pre = document.createElement("pre");
+      pre.innerText = "error, status: "+r.status;
+      document.body.appendChild(pre);
+    }
   }).catch(function(e){
     var pre = document.createElement("pre");
     pre.innerText = JSON.stringify(e);

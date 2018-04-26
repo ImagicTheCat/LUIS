@@ -5,6 +5,7 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
 {
   static const std::string ahex = "0123456789abcdef";
   static const std::string aname = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_ ";
+  static const std::string atitle = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_ ";
 
   Contract contract;
   contract.load(body);
@@ -68,8 +69,11 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
         }
 
         // write service and client
-        command_data += (!service_registered ? "/!\\ UNREGISTERED /!\\ service " : "service ")+service_key+" ("+sanitize(service_data.get("name"), aname)+")\r\n";
-        command_data += (!client_registered ? "/!\\ UNREGISTERED /!\\ client " : "client ")+client_key+" ("+sanitize(client_data.get("name"), aname)+")\r\n";
+        command_data += service_key+(service_registered ? " registered ":" unregistered ")+sanitize(service_data.get("name"), aname)+"\r\n";
+        command_data += client_key+(client_registered ? " registered ":" unregistered ")+sanitize(client_data.get("name"), aname)+"\r\n";
+
+        // write title
+        command_data += sanitize(service_data.get("title"), atitle)+"\r\n";
 
         // write contract
         std::string contract_str;
@@ -103,11 +107,14 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
                 // TODO: unlock key with out2 pass
               }
               else{
-                std::string private_key = hex2buf(identity.second.get("private_key"));
-                std::string public_key = hex2buf(identity.first);
+                private_key = hex2buf(identity.second.get("private_key"));
+                public_key = hex2buf(identity.first);
               }
 
               MapData &next_step = contract.next();
+
+              if(!service_data.has("identity"))
+                next_step.set("identity", identity.first);
 
               // sign contract
               if(contract.sign(public_key, private_key)){
