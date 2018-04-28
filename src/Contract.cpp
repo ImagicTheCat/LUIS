@@ -65,7 +65,7 @@ bool Contract::verify(bool complete) const
 
       // check
       if(sign.size() == 64 && public_key.size() == 32){
-        if(ed25519_verify((const unsigned char*)sign.c_str(), (const unsigned char*)content.c_str(), end, (const unsigned char*)public_key.c_str()) != 1)
+        if(crypto_sign_verify_detached((const unsigned char*)sign.c_str(), (const unsigned char*)content.c_str(), end, (const unsigned char*)public_key.c_str()) != 0)
           return false;
       }
       else
@@ -90,7 +90,7 @@ bool Contract::sign(const std::string& public_key, const std::string& private_ke
 
     // sign content
     unsigned char signature[64];
-    ed25519_sign(signature, (const unsigned char*)content.c_str(), content.size(), (const unsigned char*)public_key.c_str(), (const unsigned char*)private_key.c_str());
+    crypto_sign_detached(signature, NULL, (const unsigned char*)content.c_str(), content.size(), (const unsigned char*)private_key.c_str());
 
     // add signature
     signatures.push_back(std::pair<size_t, std::string>(content.size(), std::string((char*)signature, 64)));

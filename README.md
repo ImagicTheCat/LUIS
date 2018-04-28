@@ -31,8 +31,8 @@ An identification is valid in a specific context, so it's up to the service to p
 
 ## Notes
 
-* use Ed25519 for signatures
-* use OpenSSL for more general tasks
+* use libsodium signature (Ed25519)
+* use libsodium pwhash (Argon2) and secret box (XSalsa20-Poly1305) for the private_key encryption with a passphrase (SENSITIVE level for OPS and MEMORY)
 * no interface dependency, the server will call external programs to prompt things
 
 ## Config options

@@ -10,8 +10,7 @@
 #include "Dir.hpp"
 #include "Command.hpp"
 #include "Contract.hpp"
-#include "../sub/ed25519/src/ed25519.h"
-#include <openssl/crypto.h>
+#include <sodium.h>
 
 int submain_server(MainArgs &args);
 int submain_identity(MainArgs &args);

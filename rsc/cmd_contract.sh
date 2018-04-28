@@ -40,11 +40,11 @@ then
   if [[ $? == 0 ]] 
   then
     identity=${ar[$(($idx+1))]}
-    echo "$identity" | grep "nopass" > /dev/null
     pass=""
+    echo "$identity" | grep "nopass" > /dev/null
     if [[ $? == 1 ]] 
     then
-      pass=$(zenity --password --username "$identity")
+      pass=$(zenity --password)
     fi
 
     printf "%s %s" "$idx" "$pass"

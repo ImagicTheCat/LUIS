@@ -4,7 +4,7 @@
 
 #include "tools.hpp"
 #include "MapData.hpp"
-#include "../sub/ed25519/src/ed25519.h"
+#include <sodium.h>
 
 // load, add data, sign, write contract
 class Contract{

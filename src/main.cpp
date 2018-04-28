@@ -8,6 +8,11 @@
 
 int main(int argc, char **argv)
 {
+  if(sodium_init() == -1){
+    std::cerr << "error initializing libsodium" << std::endl;
+    return 1;
+  }
+
   MainArgs args(argc, argv);
 
   // cfg path

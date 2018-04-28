@@ -83,7 +83,10 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
         // exec contract command
         std::string cmd_out;
         Command cmd(args.get("cfg-cmd-contract")+" "+buf2hex(command_data), "r");
-        cmd.wait(cmd_out); // should return "<id_identity> <pass>" or "blacklist service|client|both"
+        if(cmd)
+          cmd.wait(cmd_out); // should return "<id_identity> <pass>" or "blacklist service|client|both"
+        else
+          std::cerr << "fail to call command \"" << args.get("cfg-cmd-contract") << "\"" << std::endl;
 
         size_t sep = cmd_out.find(" ");
         if(sep != std::string::npos){
@@ -100,28 +103,60 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
               std::pair<std::string, MapData> &identity = identities[id];
 
               // load identity public_key/private_key
-              std::string private_key;
-              std::string public_key;
+              std::string private_key(hex2buf(identity.second.get("private_key")));
+              std::string public_key(hex2buf(identity.first));
+
+              bool unlocked = true;
 
               if(identity.second.has("passphrase")){
-                // TODO: unlock key with out2 pass
+                unlocked = false;
+
+                // decrypt private key
+                std::string salt(hex2buf(identity.second.get("pass_salt")));
+                std::string nonce(hex2buf(identity.second.get("pass_nonce")));
+                unsigned long long int ops_limit = crypto_pwhash_OPSLIMIT_SENSITIVE;
+                size_t mem_limit = crypto_pwhash_MEMLIMIT_SENSITIVE;
+
+                if(identity.second.has("pass_ops_limit")){
+                  std::stringstream ss(identity.second.get("pass_ops_limit"));
+                  ss >> ops_limit;
+                }
+
+                if(identity.second.has("pass_mem_limit")){
+                  std::stringstream ss(identity.second.get("pass_mem_limit"));
+                  ss >> mem_limit;
+                }
+
+                if(salt.size() == crypto_pwhash_SALTBYTES && nonce.size() == crypto_secretbox_NONCEBYTES
+                    && private_key.size() == 64+crypto_secretbox_MACBYTES){
+
+                  // generate key from password
+                  unsigned char key[crypto_secretbox_KEYBYTES];
+                  if(crypto_pwhash(key, crypto_secretbox_KEYBYTES, out2.c_str(), out2.size(), (const unsigned char*)salt.c_str(), ops_limit, mem_limit, crypto_pwhash_ALG_DEFAULT) == 0){
+                    // decrypt private key
+                    unsigned char _private_key[64];
+                    if(crypto_secretbox_open_easy(_private_key, (const unsigned char*)private_key.c_str(), private_key.size(), (const unsigned char*)nonce.c_str(), key) == 0){
+                      // decrypted
+                      private_key = std::string((const char*)_private_key, 64);
+                      unlocked = true;
+                    }
+                  }
+                }
               }
-              else{
-                private_key = hex2buf(identity.second.get("private_key"));
-                public_key = hex2buf(identity.first);
-              }
 
-              MapData &next_step = contract.next();
+              if(unlocked){
+                MapData &next_step = contract.next();
 
-              if(!service_data.has("identity"))
-                next_step.set("identity", identity.first);
+                if(!service_data.has("identity"))
+                  next_step.set("identity", identity.first);
 
-              // sign contract
-              if(contract.sign(public_key, private_key)){
-                // verify contract
-                if(contract.verify(true)){
-                  // send back contract
-                  contract.write(response);
+                // sign contract
+                if(contract.sign(public_key, private_key)){
+                  // verify contract
+                  if(contract.verify(true)){
+                    // send back contract
+                    contract.write(response);
+                  }
                 }
               }
             }
