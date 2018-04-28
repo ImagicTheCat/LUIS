@@ -151,7 +151,7 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
                   next_step.set("identity", identity.first);
 
                 // sign contract
-                if(contract.sign(public_key, private_key)){
+                if(contract.sign(private_key)){
                   // verify contract
                   if(contract.verify(true)){
                     // send back contract

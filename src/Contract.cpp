@@ -79,9 +79,9 @@ bool Contract::verify(bool complete) const
 }
 
 
-bool Contract::sign(const std::string& public_key, const std::string& private_key)
+bool Contract::sign(const std::string& private_key)
 {
-  if(data_steps.size() > signatures.size() && public_key.size() == 32 && private_key.size() == 64){
+  if(data_steps.size() > signatures.size() && private_key.size() == 64){
     // add step data to content
     MapData& data_step = data_steps[data_steps.size()-1];
     std::string data;

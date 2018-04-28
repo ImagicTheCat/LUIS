@@ -26,7 +26,7 @@ class Contract{
 
     // sign the last added step, update contract content
     // return true on success (meaning the content is modified, a post-verification is recommended)
-    bool sign(const std::string& public_key, const std::string& private_key);
+    bool sign(const std::string& private_key);
 
     const std::vector<std::pair<size_t, std::string> >& getSignatures()const{ return signatures; }
     const std::vector<MapData>& getDataSteps()const{ return data_steps; }
