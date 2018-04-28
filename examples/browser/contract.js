@@ -27,7 +27,7 @@ onload: function()
     document.body.appendChild(h);
 
     var pre = document.createElement("pre");
-    pre.innerText = contract;
+    pre.innerText = contract.write();
     document.body.appendChild(pre);
 
     var h = document.createElement("h1");
@@ -37,12 +37,17 @@ onload: function()
     // send contract to LUIS
     fetch("http://localhost:25519/contract", {
       method: "POST",
-      body: contract
+      body: contract.write()
     }).then(function(r){
       if(r.ok){
         r.text().then(function(body){
           var pre = document.createElement("pre");
           pre.innerText = body;
+
+          var rcontract = new Contract();
+          rcontract.load(body);
+          pre.innerText += "\n\n"+(rcontract.verify(true) ? "CONTRACT VALID" : "CONTRACT INVALID");
+
           document.body.appendChild(pre);
         });
       }
@@ -57,5 +62,7 @@ onload: function()
       document.body.appendChild(pre);
     });
   }
+  else
+    document.body.appendChild(document.createTextNode("can't verify contract"));
 }
 }

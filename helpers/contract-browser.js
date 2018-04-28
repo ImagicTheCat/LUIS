@@ -123,7 +123,7 @@ Contract.prototype.verify = function(complete)
 
       // check
       if(sign.length == 64 && public_key.length == 32){
-        if(sodium.crypto_sign_verify_detached(sign, this.content.substr(0, end), public_key) != 0)
+        if(!sodium.crypto_sign_verify_detached(sign, this.content.substr(0, end), public_key))
           return false;
       }
       else
