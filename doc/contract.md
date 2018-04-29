@@ -44,6 +44,18 @@ Any key/value can be added at any step of the contract, but some of them are req
 * creation or LUIS step
   * `identity`: public_key of the LUIS identity (user), if not added by the contract creator the user will be able to choose an identity and add it to the final step
 
+### Validity
+
+A contract is valid if:
+* there is at least one step/signature
+* there is no data after the last step/signature
+* each step signature is valid
+* (if verified as completed) the first or (then) the last step define `identity` and the last step is signed with this identity
+
+Then, a service will usually add more restrictions, ex:
+* check a specific amount of steps (2,3...)
+* check its own signature to ensure that the contract is the same
+* ...
 
 ## Examples of completed contracts
 
