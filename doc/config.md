@@ -38,3 +38,8 @@ identities as...
 <contract_title>CRLF
 <contract_raw_content>
 ```
+
+Should return:
+* nothing to cancel
+* `<identity_index> <password>` to accept
+* `blacklist <client|service|both>` to blacklist the client, service or both
