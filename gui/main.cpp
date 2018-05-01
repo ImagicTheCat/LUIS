@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
     // read contract
     for(size_t i = nids+4; i < lines.size(); i++)
-      contract += lines[i]+"\r\n";
+      contract += lines[i]+(i == lines.size()-1 ? "":"\r\n");
 
     QApplication app(argc, argv);
 

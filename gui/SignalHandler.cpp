@@ -28,7 +28,7 @@ void SignalHandler::identity_changed(int index)
   size_t i = index;
   if(i < identities.size()){
     std::vector<std::string> args;
-    split(identities[index], " ", args);
+    split(identities[i], " ", args);
     if(args.size() >= 2 && args[1] == "pass")
       wpassword.show();
     else
