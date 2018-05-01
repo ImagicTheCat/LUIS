@@ -5,7 +5,9 @@ The config file is located by default at `/etc/luis/luis.conf` for GNU/Linux and
 
 This path can be modified with the `--cfg <path>` command option.
 
+
 ## Options
+
 
 Every config option can be modified in the command line using `--cfg-<option> <value>`.
 The config file use the simple "map data" format (like the contract).
