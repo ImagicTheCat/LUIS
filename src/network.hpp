@@ -1,8 +1,11 @@
+#ifndef H_NETWORK
+#define H_NETWORK
+
 #ifdef _WIN32
 
 #include <winsock2.h>
 #define socklen_t int
-#define errno WSAGetLastError()
+//#define errno WSAGetLastError()
 
 #else
 
@@ -24,5 +27,7 @@ typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
 
 #define closesocket(s) close(s)
+
+#endif
 
 #endif

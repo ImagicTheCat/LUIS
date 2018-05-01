@@ -25,7 +25,7 @@
 
 #include <string>
 
-#ifdef __WIN32 
+#ifdef _WIN32 
 
 #include <windows.h>
 #define popen(a,b) _popen(a,b)

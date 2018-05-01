@@ -8,3 +8,5 @@ HEADERS += SignalHandler.hpp
 SOURCES += ../src/tools.cpp
 SOURCES += SignalHandler.cpp
 SOURCES += main.cpp
+
+DEFINES -= UNICODE
