@@ -30,7 +30,7 @@ set(SS
 if(WIN32)
   add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
   set(LIBS
-    ws2_32 Shlwapi crypto)
+    ws2_32 Shlwapi sodium)
 
   # no Release/Debug dirs on windows
   SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${OUTPUT_DIRECTORY}")

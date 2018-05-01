@@ -92,6 +92,15 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
         if(sep != std::string::npos){
           std::string out1(cmd_out.substr(0, sep)), out2(cmd_out.substr(sep+1));
           if(out1 == "blacklist"){ // blacklist
+            if(out2 == "client" || out2 != "service"){ // client only or both
+              client_fdata.set("deny", "");
+              client_fdata.writeFile(client_path);
+            }
+
+            if(out2 == "service" || out2 != "client"){ // service only or both
+              service_fdata.set("deny", "");
+              service_fdata.writeFile(service_path);
+            }
           }
           else{ // sign contract
             std::stringstream ss;
@@ -154,6 +163,12 @@ void request_contract(MainArgs &args, const std::string &body, std::string &resp
                 if(contract.sign(private_key)){
                   // verify contract
                   if(contract.verify(true)){
+                    // register client/service
+                    if(!client_registered)
+                      client_fdata.writeFile(client_path);
+                    if(!service_registered)
+                      service_fdata.writeFile(service_path);
+
                     // send back contract
                     contract.write(response);
                   }
