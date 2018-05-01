@@ -37,4 +37,8 @@ An identification is valid in a specific context, so it's up to the service to p
 
 ## Config options
 
-* `data-dir`: data directory (ex: `/var/lib/luis`)
+See [config](doc/config.md).
+
+## Contract format
+
+See [contract](doc/contract.md).

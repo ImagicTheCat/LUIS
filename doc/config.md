@@ -15,6 +15,8 @@ The config file use the simple "map data" format (like the contract).
 Path of the data directory (without end `/`, should have `identities` and `keys` directories, they are not created).
 If not set, will be `<exec_path>/data` under Windows.
 
+ex (GNU/Linux): `/var/lib/luis`
+
 ### `cmd-password-term`
 
 Command to ask a password in a terminal, should print nothing in the terminal and write the typed password to stdin.
