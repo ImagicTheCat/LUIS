@@ -10,7 +10,7 @@ void Contract::load(const std::string &data)
   // parse
   size_t lpos = 0; // begin cursor
   size_t spos; // end cursor
-  while((spos = content.find("\r\n=", lpos)) != std::string::npos){
+  while((spos = content.find("\r\n=", (lpos >= 2 ? lpos-2 : lpos))) != std::string::npos){
     std::string data_step(content.substr(lpos, spos+2-lpos));
 
     lpos = spos+3;

@@ -63,7 +63,7 @@ Contract.prototype.load = function(content)
   // parse
   var lpos = 0; // begin cursor
   var spos; // end cursor
-  while((spos = content.indexOf("\r\n=", lpos)) != -1){
+  while((spos = content.indexOf("\r\n=", (lpos >= 2 ? lpos-2 : lpos))) != -1){
     var data_step = content.substr(lpos, spos+2-lpos);
 
     lpos = spos+3;
