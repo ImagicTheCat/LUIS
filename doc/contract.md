@@ -1,6 +1,6 @@
 # Contract
 
-A contract is a message carried and signed by each step from the service to the identity. This allow for example to do an identification process. The first step is the service/client creating the contract, the before last step is the client (if one exists) and the last step is the identity.
+A contract is a message carried and signed by each step from the service to the identity. This allow for example to do an identification process. The first step is the service creating the contract and the last step is the identity (if completed). In-between steps can be anything useful specified by the service/client process.
 
 A contract is generic and not specifically designed for identification. For example, changing some critical account informations on a web site could require to sign a higher level contract. We could also generate a persistent contract to verify a public information (uploaded content, signature...), bound to a specific service.
 
@@ -59,10 +59,7 @@ Then, a service will usually add more restrictions, ex:
 
 ## Examples of completed contracts
 
-### Simple website login (with https)
-
-Without https, stealing/using the contract (identity) would be possible (ex: man in the middle).
-Also, we can't really encrypt data using the identity and Ed25519 in a secure way in this case because we don't have any client to rely on to verify a temporary private_key (see example without https).
+### Simple website login (with HTTPS)
 
 ```
 version 1
@@ -76,9 +73,10 @@ id <connection_id>
 =<identity_signature>
 ```
 
-### Website login (without https)
+### Website login (without HTTPS)
 
-Imagine that we want to create a secure webapp without https (not easy and probably not recommended), we could add a step (client) to the contract.
+Without HTTPS, stealing/using the contract (identity) would be possible (ex: man in the middle attack).
+Imagine that we still want to identify an user, we could add a step (client) to the contract.
 
 ```
 version 1
@@ -91,19 +89,17 @@ id <connection_id>
 =<site_signature>
 public_key <client_public_key>
 name <client_name>
-encryption_key <tmp_public_encryption_key>
 =<client_signature>
 =<identity_signature>
 ```
 
-If we forget cookies and generate a localStorage private_key (that will be registered to LUIS) as the client and a temporary private_key for the encryption, we can now share a secret and use symmetric encryption between the client (the web page) and the service (the server).
-If a man in the middle use the contract, since he doesn't have the client private_key and the encryption private_key, he can't modify the contract and can't communicate properly with the server.
+The client signature would be generated client-side and the service would check the number of steps when completed.
 
-#### Game/app login/encryption (without using https)
+### Game/app login (without using encryption)
 
-Same as the website login without https, we would register a local client by generating a private_key (ex: installation) and use it to create the contract with the server/client/identity (adding the temporary public_key for encryption).
+Same as the website login without HTTPS, we would register a local client by generating a private_key (ex: installation) and use it to create the contract with the server/client/identity.
 
-#### Local application
+### Local application
 
 Even in local, making the contract unique (timestamp, id...) is relevant: another user looking at TCP packets could save the contract for later use.
 
@@ -118,4 +114,6 @@ timestamp <timestamp>
 =<identity_signature>
 ```
 
+### Note about client steps
 
+Even with HTTPS, if the LUIS server's machine has malicious programs, they could try to identify themselves to a service. Even if the identity has protections (password prompt or anything else), the user could valid the contract thinking of a legit request. Adding a client step can increase awareness; give more information about the client application to the remote service and to the user for further verifications.
